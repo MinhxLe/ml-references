@@ -1,0 +1,42 @@
+wandb_version: 1
+
+train:
+  desc: null
+  value:
+    batch_size: 40
+    num_epoch: 250
+    sigma: 0.1
+    lr: 0.01
+_wandb:
+  desc: null
+  value:
+    python_version: 3.11.1
+    cli_version: 0.16.6
+    framework: huggingface
+    huggingface_version: 4.39.1
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1712443692.0
+    t:
+      1:
+      - 1
+      - 11
+      - 49
+      - 55
+      2:
+      - 1
+      - 11
+      - 49
+      - 55
+      3:
+      - 2
+      - 16
+      - 23
+      4: 3.11.1
+      5: 0.16.6
+      6: 4.39.1
+      8:
+      - 4
+      - 5
+      - 13
+      13: darwin-arm64

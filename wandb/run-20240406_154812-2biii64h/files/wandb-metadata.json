@@ -1,0 +1,48 @@
+{
+    "os": "macOS-13.1-arm64-arm-64bit",
+    "python": "3.11.1",
+    "heartbeatAt": "2024-04-06T22:48:12.748482",
+    "startedAt": "2024-04-06T22:48:12.089532",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "<python with no main file>",
+    "codePathLocal": null,
+    "git": {
+        "remote": "git@github.com:MinhxLe/ml-references.git",
+        "commit": "ac405db8f8dacbb4bacdc6ac3bf45ffe51963e02"
+    },
+    "email": "minh@usebeam.co",
+    "root": "/Users/minh/project/ml-references",
+    "host": "Minhs-MacBook-Pro.local",
+    "username": "minh",
+    "executable": "/Users/minh/.pyenv/versions/3.11.1/envs/research/bin/python3.11",
+    "cpu_count": 8,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 3228,
+        "min": 600,
+        "max": 3228
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3228,
+            "min": 600,
+            "max": 3228
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 460.4317207336426,
+            "used": 12.256824493408203
+        }
+    },
+    "gpuapple": {
+        "type": "arm",
+        "vendor": "Apple"
+    },
+    "memory": {
+        "total": 16.0
+    }
+}

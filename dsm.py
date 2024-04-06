@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import torch
 import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset, DataLoader
 import torch.optim as optim
 import torch.nn as nn
+import wandb
 
 
 # Set the random seed for reproducibility
@@ -77,9 +78,9 @@ class EnergyFunction(nn.Module):
     def __init__(self, input_dim: int):
         super().__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(input_dim, input_dim * 32),
-            nn.ReLU(),
-            nn.Linear(input_dim * 32, 1),
+            nn.Linear(input_dim, input_dim * 4),
+            nn.Sigmoid(),
+            nn.Linear(input_dim * 4, 1),
         )
 
     def forward(self, x):
@@ -92,15 +93,20 @@ model = EnergyFunction(data.shape[1])
 # training
 @dataclass
 class TrainCfg:
-    batch_size: int = 100
-    num_epoch: int = 5000
-    sigma: float = 0.01  # noise sigma
-    lr: float = 0.001
+    batch_size: int = 40
+    num_epoch: int = 250
+    sigma: float = 0.1  # noise sigma
+    lr: float = 0.01
 
 
 train_cfg = TrainCfg()
-loss_fn = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=train_cfg.lr)
+
+
+def loss_fn(estimate, target):
+    delta = target - estimate
+    return 0.5 * (delta * delta).sum(dim=0).mean()
+
 
 # data
 if not data.requires_grad:
@@ -109,7 +115,19 @@ if not data.requires_grad:
 dataset = TensorDataset(data)
 dataloader = DataLoader(dataset, train_cfg.batch_size, shuffle=True)
 
+
+# training
+# start a new wandb run to track this script
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="toy-ebm",
+    # track hyperparameters and run metadata
+    config=dict(train=asdict(train_cfg)),
+)
+
+
 for epoch in range(train_cfg.num_epoch):
+    total_loss = 0
     for batch_num, (batch_data,) in enumerate(dataloader):
         optimizer.zero_grad()
         if batch_data.grad is not None:
@@ -122,20 +140,25 @@ for epoch in range(train_cfg.num_epoch):
 
         model_output = model(noised_data)
 
-        (estimated_score,) = torch.autograd.grad(
-            outputs=model_output,
-            inputs=batch_data,
+        (estimate_score,) = torch.autograd.grad(
+            outputs=-model_output,  # negative to get -energy
+            inputs=noised_data,
             # TODO learn what these 2 mean
             grad_outputs=torch.ones_like(model_output),
             create_graph=True,
         )
 
-        target_score = noise * (train_cfg.sigma) ** (-2)
-        loss = loss_fn(estimated_score, target_score)
+        target_score = -noise * ((train_cfg.sigma) ** (-2))
+        loss = loss_fn(estimate_score, target_score)
         loss.backward()
         optimizer.step()
+        total_loss += loss.item()
     if epoch % 10 == 0:
-        print(f"epoch:{epoch}, loss: {loss:.4f}")
+        train_loss = total_loss / batch_num
+        wandb.log(dict(epoch=epoch, train_loss=train_loss))
+        print(f"epoch:{epoch}, loss: {train_loss:.4f}")
 
 if data.requires_grad:
     data = data.requires_grad_(False)
+
+wandb.finish()
